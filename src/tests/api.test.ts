@@ -7,7 +7,6 @@ const app = createApp();
 let adminToken = '';
 let categoryId = '';
 let locationId = '';
-let createdEventId = '';
 
 describe('API', () => {
   beforeAll(async () => {
@@ -60,7 +59,6 @@ describe('API', () => {
 
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
-    createdEventId = res.body.id;
   });
 
   it('GET /events/:id returns 404 for non-existing id', async () => {

@@ -101,7 +101,9 @@ async function main() {
       await prisma.rSVP.create({
         data: { userId: user.id, eventId: event.id },
       });
-    } catch {}
+    } catch {
+        // hunsa
+    }
 
     await prisma.comment.create({
       data: {

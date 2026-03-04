@@ -18,7 +18,7 @@ export function createApp() {
     res.status(404).json({ error: 'Not found' });
   });
 
-  app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  app.use((err: unknown, _req: express.Request, res: express.Response) => {
     console.error(err);
     res.status(400).json({ error: 'Bad request' });
   });
