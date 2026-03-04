@@ -3,6 +3,7 @@ import { eventsRouter } from './events';
 import { authRouter } from './auth';
 import { adminEventsRouter } from './adminEvents';
 import { metaRouter } from './meta';
+import { adminImagesRouter } from './adminImages';
 
 
 export const routes = Router();
@@ -26,6 +27,9 @@ routes.get('/', (_req, res) => {
 
       { method: 'GET', path: '/categories', description: 'List categories' },
       { method: 'GET', path: '/locations', description: 'List locations' },
+
+      { method: 'POST', path: '/admin/events/:id/images', description: 'Upload image to event (admin, jpg/png)' },
+      { method: 'DELETE', path: '/admin/images/:imageId', description: 'Delete image (admin)' },
     ],
   });
 });
@@ -36,3 +40,4 @@ routes.use('/auth', authRouter);
 routes.use('/events', eventsRouter);
 routes.use('/admin/events', adminEventsRouter);
 routes.use('/', metaRouter);
+routes.use('/admin', adminImagesRouter);
