@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique @db.VarChar(30)
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  events    Event[]
+  rsvps     RSVP[]
+  comments  Comment[]
+}
+
+model Category {
+  id    String  @id @default(uuid())
+  name  String  @unique @db.VarChar(50)
+  slug  String  @unique @db.VarChar(60)
+
+  events Event[]
+}
+
+model Location {
+  id    String @id @default(uuid())
+  name  String @unique @db.VarChar(80)
+  slug  String @unique @db.VarChar(80)
+
+  events Event[]
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String    @db.VarChar(120)
+  description String    @db.Text
+  startsAt    DateTime
+  endsAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  status      String    @default("PUBLISHED") @db.VarChar(20)
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  locationId  String
+  location    Location  @relation(fields: [locationId], references: [id])
+
+  images      EventImage[]
+  rsvps       RSVP[]
+  comments    Comment[]
+}
+
+model EventImage {
+  id        String   @id @default(uuid())
+  url       String   @db.Text
+  publicId  String   @unique @db.VarChar(120)
+  mimeType  String   @db.VarChar(30)
+  createdAt DateTime @default(now())
+
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model RSVP {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
