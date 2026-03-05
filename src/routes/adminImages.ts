@@ -23,52 +23,52 @@ adminImagesRouter.post(
   upload.single('file'),
   async (req, res, next) => {
     try {
-      const eventId = req.params.id;
+        const rawId = req.params.id;
+        const eventId = Array.isArray(rawId) ? rawId[0] : rawId;
 
-      const event = await prisma.event.findUnique({ where: { id: eventId } });
-      if (!event) return res.status(404).json({ error: 'Not found' });
+        if (!eventId) {
+        return res.status(400).json({ error: 'Missing event id' });
+        }
 
-      if (!req.file) {
-        return res.status(400).json({ error: 'Missing file (field name must be "file")' });
-      }
+        const event = await prisma.event.findUnique({ where: { id: eventId } });
+        if (!event) return res.status(404).json({ error: 'Not found' });
 
-      const file = req.file;
+        if (!req.file) {
+            return res.status(400).json({ error: 'Missing file (field name must be "file")' });
+        }
 
-      if (!isAllowedMime(file.mimetype)) {
-        return res.status(400).json({ error: 'Only image/jpeg and image/png are allowed' });
-      }
+        const file = req.file;
 
-      const options: UploadApiOptions = {
-        folder: 'vef2-h1-events',
-        resource_type: 'image',
-      };
+        if (!isAllowedMime(file.mimetype)) {
+            return res.status(400).json({ error: 'Only image/jpeg and image/png are allowed' });
+        }
 
-      const uploadResult = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
-        const options: UploadApiOptions = {
-          folder: 'vef2-h1-events',
-          resource_type: 'image',
-        };
-      
-        const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
-          if (error || !result) return reject(error);
-          resolve({ secure_url: result.secure_url, public_id: result.public_id });
+        const uploadResult = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+            const options: UploadApiOptions = {
+            folder: 'vef2-h1-events',
+            resource_type: 'image',
+            };
+        
+            const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+            if (error || !result) return reject(error);
+            resolve({ secure_url: result.secure_url, public_id: result.public_id });
+            });
+        
+            stream.end(file.buffer);
         });
-      
-        stream.end(file.buffer);
-      });
 
-      const img = await prisma.eventImage.create({
-        data: {
-          eventId,
-          url: uploadResult.secure_url,
-          publicId: uploadResult.public_id,
-          mimeType: file.mimetype,
-        },
-      });
+        const img = await prisma.eventImage.create({
+            data: {
+            eventId,
+            url: uploadResult.secure_url,
+            publicId: uploadResult.public_id,
+            mimeType: file.mimetype,
+            },
+        });
 
-      return res.status(201).json(img);
-    } catch (e) {
-      next(e);
-    }
-  },
+        return res.status(201).json(img);
+        } catch (e) {
+        next(e);
+        }
+    },
 );
