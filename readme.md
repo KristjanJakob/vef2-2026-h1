@@ -61,7 +61,7 @@ npm run dev
 Serverinn keyrir á:
 http://localhost:3000
 
-## 6. Keyra tests
+## 7. Keyra tests
 
 npm test
 
