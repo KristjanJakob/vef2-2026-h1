@@ -1,3 +1,4 @@
+import type { UploadApiOptions } from 'cloudinary';
 import { Router } from 'express';
 import multer from 'multer';
 import { prisma } from '../lib/prisma';
@@ -26,7 +27,7 @@ adminImagesRouter.post(
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ error: 'Not found' });
-      
+
       if (!req.file) {
         return res.status(400).json({ error: 'Missing file (field name must be "file")' });
       }
@@ -37,18 +38,22 @@ adminImagesRouter.post(
         return res.status(400).json({ error: 'Only image/jpeg and image/png are allowed' });
       }
 
-      const uploadResult = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: 'vef2-h1-events',
-            resource_type: 'image',
-          },
-          (error, result) => {
-            if (error || !result) return reject(error);
-            resolve({ secure_url: result.secure_url, public_id: result.public_id });
-          },
-        );
+      const options: UploadApiOptions = {
+        folder: 'vef2-h1-events',
+        resource_type: 'image',
+      };
 
+      const uploadResult = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+        const options: UploadApiOptions = {
+          folder: 'vef2-h1-events',
+          resource_type: 'image',
+        };
+      
+        const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+          if (error || !result) return reject(error);
+          resolve({ secure_url: result.secure_url, public_id: result.public_id });
+        });
+      
         stream.end(file.buffer);
       });
 
