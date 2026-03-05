@@ -70,3 +70,7 @@ Testin ná yfir:
 - POST /auth/login
 - POST /admin/events
 - GET /events/:id
+
+---
+## Hýsing
+Render: https://vef2-2026-h1.onrender.com/
