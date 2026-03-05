@@ -26,12 +26,14 @@ adminImagesRouter.post(
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
       if (!event) return res.status(404).json({ error: 'Not found' });
-
+      
       if (!req.file) {
         return res.status(400).json({ error: 'Missing file (field name must be "file")' });
       }
 
-      if (!isAllowedMime(req.file.mimetype)) {
+      const file = req.file;
+
+      if (!isAllowedMime(file.mimetype)) {
         return res.status(400).json({ error: 'Only image/jpeg and image/png are allowed' });
       }
 
@@ -47,7 +49,7 @@ adminImagesRouter.post(
           },
         );
 
-        stream.end(req.file.buffer);
+        stream.end(file.buffer);
       });
 
       const img = await prisma.eventImage.create({
@@ -55,7 +57,7 @@ adminImagesRouter.post(
           eventId,
           url: uploadResult.secure_url,
           publicId: uploadResult.public_id,
-          mimeType: req.file.mimetype,
+          mimeType: file.mimetype,
         },
       });
 

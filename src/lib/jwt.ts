@@ -1,19 +1,37 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type JwtPayload} from 'jsonwebtoken';
 
-type JwtPayload = {
-  sub: string;
-  role: 'USER' | 'ADMIN';
+type Role = 'USER' | 'ADMIN';
+
+export type AuthTokenPayload = JwtPayload & {
+    sub: string;
+    role: Role;
 };
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is missing in environment variables');
+function getJwtSecret(): string {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('Missing JWT_SECRET');
+    }
+    return secret;
 }
-
-export function signToken(payload: JwtPayload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  
+const JWT_SECRET = getJwtSecret();
+  
+export function signToken(payload: { sub: string; role: Role }) {
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }
+  
+export function verifyToken(token: string): AuthTokenPayload {
+    const decoded = jwt.verify(token, JWT_SECRET);
+  
+    if (typeof decoded === 'string') {
+      throw new Error('Invalid token payload');
+    }
 
-export function verifyToken(token: string): JwtPayload {
-  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const role = (decoded as any).role;
+    if (role !== 'USER' && role !== 'ADMIN') {
+      throw new Error('Invalid token role');
+    }
+  
+    return decoded as AuthTokenPayload;
 }
