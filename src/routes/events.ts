@@ -35,23 +35,23 @@ eventsRouter.get('/', async (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
 
-  eventsRouter.get('/:id', async (req, res, next) => {
-    try {
-      const { id } = req.params;
-  
-      const event = await prisma.event.findUnique({
-        where: { id },
-        include: { category: true, location: true, images: true },
-      });
-  
-      if (!event) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-  
-      return res.json(event);
-    } catch (e) {
-      next(e);
+eventsRouter.get('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: { category: true, location: true, images: true },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: 'Not found' });
     }
-  });
+
+    return res.json(event);
+  } catch (e) {
+    next(e);
+  }
 });
