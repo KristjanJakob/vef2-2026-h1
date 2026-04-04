@@ -8,12 +8,34 @@ eventsRouter.get('/', async (req, res, next) => {
     const page = Math.max(1, Number(req.query.page ?? 1));
     const limitRaw = Number(req.query.limit ?? 10);
     const limit = Math.min(50, Math.max(1, limitRaw));
+    const search =
+      typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
     const skip = (page - 1) * limit;
 
+    const where = search
+      ? {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+            {
+              description: {
+                contains: search,
+                mode: 'insensitive' as const,
+              },
+            },
+          ],
+        }
+      : undefined;
+
     const [total, data] = await Promise.all([
-      prisma.event.count(),
+      prisma.event.count({ where }),
       prisma.event.findMany({
+        where,
         orderBy: { startsAt: 'asc' },
         skip,
         take: limit,
